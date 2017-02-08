@@ -1,0 +1,29 @@
+{
+  "name": "bazooka",
+  "version": "1.0.0",
+  "description": "CLI API-centric CMS",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/csmets/bazooka.git"
+  },
+  "keywords": [
+    "CMS",
+    "API"
+  ],
+  "author": "Clyde Smets",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/csmets/bazooka/issues"
+  },
+  "homepage": "https://github.com/csmets/bazooka#readme",
+  "dependencies": {
+    "ssh2": "^0.5.4"
+  },
+  "preferGlobal": true,
+  "bin": {
+	"bazooka": "bin/bazooka.js"
+  }
+}
