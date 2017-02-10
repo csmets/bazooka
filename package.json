@@ -20,10 +20,11 @@
   },
   "homepage": "https://github.com/csmets/bazooka#readme",
   "dependencies": {
+    "markdown-to-json": "^0.4.2",
     "ssh2": "^0.5.4"
   },
   "preferGlobal": true,
   "bin": {
-	"bazooka": "bin/bazooka.js"
+    "bazooka": "bin/bazooka.js"
   }
 }

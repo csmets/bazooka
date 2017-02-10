@@ -3,9 +3,58 @@
 'use strict'
 const fs = require('fs')
 const Client = require('ssh2').Client
+const path = require('path')
 
-// Get Project config
+// Path of where command is executed from
 const workingDir = process.cwd();
+
+/* ============================================================================
+ * EXPORT
+ * ==========================================================================*/
+
+const getDirectories = (srcpath) => {
+	return fs.readdirSync(srcpath)
+		.filter(file => fs.statSync(path.join(srcpath, file)).isDirectory());
+}
+
+const getFiles = (srcpath) => {
+	return fs.readdirSync(srcpath)
+		.filter(file => fs.statSync(
+			path.join(srcpath, file)).isDirectory() == false
+		);
+}
+
+const crawlnstore = (path, obj) => {
+	const dirs = getDirectories(path);
+	const newObj = {};
+	dirs.forEach((dir) => {
+		newObj[dir] = crawlnstore(path + '/' + dir, {});
+	});
+
+	if (dirs.length > 0) {
+		return Object.assign(obj, newObj);
+	} else {
+		return {};
+	}
+}
+
+const compile = () => {
+	
+	const rootDirectories = getDirectories('./');
+	
+	const json = crawlnstore(workingDir, {});
+
+	console.log(JSON.stringify(json))
+
+}
+
+compile();
+
+/* ============================================================================
+ * REMOTE UPLOAD
+ * ==========================================================================*/
+/*
+// Get Project config
 
 const configFile = fs.readFileSync(
 	workingDir + "/.bazookaConfig",
@@ -44,3 +93,4 @@ conn.on('ready', () => {
 	username: config.username,
 	password: config.password
 });
+*/
