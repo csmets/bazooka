@@ -8,6 +8,15 @@ const path = require('path')
 // Path of where command is executed from
 const workingDir = process.cwd();
 
+// Get Project config
+const configFile = fs.readFileSync(
+	workingDir + "/.bazookaConfig",
+	'utf8',
+	'r'
+);
+
+const config = JSON.parse(configFile);
+
 /* ============================================================================
  * EXPORT
  * ==========================================================================*/
@@ -28,6 +37,10 @@ const crawlnstore = (path, obj) => {
 	const dirs = getDirectories(path);
 	const newObj = {};
 	dirs.forEach((dir) => {
+		const files = getFiles(path);
+		files.forEach((file) => {
+			
+		});
 		newObj[dir] = crawlnstore(path + '/' + dir, {});
 	});
 
@@ -54,16 +67,6 @@ compile();
  * REMOTE UPLOAD
  * ==========================================================================*/
 /*
-// Get Project config
-
-const configFile = fs.readFileSync(
-	workingDir + "/.bazookaConfig",
-	'utf8',
-	'r'
-);
-
-const config = JSON.parse(configFile);
-
 // Connect to remote server and upload public files
 const conn = new Client();
 
