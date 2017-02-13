@@ -16,6 +16,8 @@ const config = JSON.parse(configFile);
  * EXPORT
  * ==========================================================================*/
 
+const globalIgnoredDirs = 'public';
+config.excludeDirs.push(globalIgnoredDirs);
 const json = bazooka.compile(process.cwd(), config.excludeDirs, {});
 const jsonString = JSON.stringify(json, null, 4);
 
