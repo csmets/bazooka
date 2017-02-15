@@ -25,6 +25,7 @@
     "commander": "^2.9.0",
     "markdown-to-json": "^0.4.2",
     "marked": "^0.3.6",
+    "prompt": "^1.0.0",
     "ssh2": "^0.5.4",
     "yaml-front-matter": "^3.4.0"
   },

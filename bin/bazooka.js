@@ -5,37 +5,37 @@ const Client = require('ssh2').Client;
 const bazooka = require('../lib/bazooka-compile');
 const program = require('commander');
 const color = require('colors');
+const prompt = require('prompt');
 
 // Path of where command is executed from
 const workingDir = process.cwd();
 
 const bazookaConfigExists = () => {
-	if (fs.existsSync(`${process.cwd()}/.bazookaConfig`)){
+	if (fs.existsSync(`${process.cwd()}/.bazookaConfig`)) {
 		return true;
 	}
 	return false;
-}
+};
 
 /* ============================================================================
  * LET'S BAZOOKA!
  * ==========================================================================*/
-program
-	.version('0.1.0')
+program.version('0.1.0');
 
 program
-	.command('push', 'Push project to remote server')
+	.command('push')
+	.description('Push project to remote server')
 	.action(() => {
-
 		// Get Project config
-		if (!bazookaConfigExists()){
+		if (!bazookaConfigExists()) {
 			console.log(
-				`.bazookaConfig not found. Please run "bazooka init" first`
+				'.bazookaConfig not found. Please run "bazooka init" first'
 				.red);
 			process.exit();
 		}
 
 		const configFile =
-			fs.readFileSync(`${workingDir}/.bazookaConfig`,'utf8','r');
+			fs.readFileSync(`${workingDir}/.bazookaConfig`, 'utf8', 'r');
 
 		const config = JSON.parse(configFile);
 
@@ -55,41 +55,94 @@ program
 		 * REMOTE UPLOAD
 		 * ==================================================================*/
 		// Connect to remote server and upload public files
-		const conn = new Client();
+		const schema = {
+			properties: {
+				username: {
+					description: 'sftp username',
+					required: true,
+				},
+				password: {
+					description: 'sftp password',
+					required: true,
+				},
+			},
+		};
 
-		conn.on('ready', () => {
-			conn.sftp((err, sftp) => {
-				if (err) throw err;
+		prompt.start();
 
-				// SFTP connect is ready. Do actions below.
-				const readStream =
-					fs.createReadStream(`${workingDir}/export.json`);
-				const writeStream =
-					sftp.createWriteStream(`${config.location}/export.json`);
+		prompt.get(schema, (promptErr, result) => {
+			const conn = new Client();
 
-				writeStream.on('close', () => {
-					console.log('- file transferred successfully');
+			conn.on('ready', () => {
+				conn.sftp((err, sftp) => {
+					if (err) throw err;
+
+					// SFTP connect is ready. Do actions below.
+					const readStream =
+						fs.createReadStream(`${workingDir}/export.json`);
+					const writeStream =
+						sftp.createWriteStream(`${config.location}/export.json`);
+
+					writeStream.on('close', () => {
+						console.log('- file transferred successfully'.green);
+					});
+
+					writeStream.on('end', () => {
+						console.log('sftp connection closed'.green);
+						conn.close();
+					});
+
+					readStream.pipe(writeStream);
 				});
-
-				writeStream.on('end', () => {
-					console.log('sftp connection closed');
-					conn.close();
-				});
-
-				readStream.pipe(writeStream);
+			}).connect({
+				host: config.host,
+				port: config.port,
+				username: result.username,
+				password: result.password,
 			});
-		}).connect({
-			host: config.host,
-			port: config.port,
-			username: config.username,
-			password: config.password,
 		});
 	});
 
 program
-	.command('init', 'Creates bazooka config file')
+	.command('init')
+	.description('Create bazooka project configuration file.')
 	.action(() => {
 		// Create .bazookaconfig file and run through default steps.
+		const schema = {
+			properties: {
+				host: {
+					description: 'Enter in the remote server host ip',
+				},
+				port: {
+					type: 'integer',
+					description: 'Enter the host port number',
+				},
+				server_location: {
+					type: 'string',
+					description: 'Enter remote server project path',
+				},
+			},
+		};
+		prompt.start();
+		prompt.get(
+			schema,
+			(err, result) => {
+				const configObj = {
+					host: result.host,
+					port: result.port,
+					location: result.server_location,
+					excludeDirs: [],
+				};
+				const bazookaConfig = JSON.stringify(configObj, null, 4);
+				fs.writeFile('./.bazookaConfig', bazookaConfig, (fsErr) => {
+					if (fsErr) {
+						console.log(fsErr);
+						return false;
+					}
+					console.log('.bazookaConfig created'.green);
+					return true;
+				});
+			});
 	});
 
 program.parse(process.argv);
