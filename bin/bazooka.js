@@ -77,22 +77,22 @@ program
 				conn.sftp((err, sftp) => {
 					if (err) throw err;
 
-					// SFTP connect is ready. Do actions below.
-					const readStream =
+					// Push compiled export.json files to remote server.
+					const exportReadStream =
 						fs.createReadStream(`${workingDir}/export.json`);
-					const writeStream =
-						sftp.createWriteStream(`${config.location}/export.json`);
+					const exportWriteStream = sftp.createWriteStream(
+						`${config.location}/export.json`
+					);
+					exportReadStream.pipe(exportWriteStream);
+
+					// Push all public assets to remote server.
+					
 
 					writeStream.on('close', () => {
 						console.log('- file transferred successfully'.green);
+						conn.end();
 					});
 
-					writeStream.on('end', () => {
-						console.log('sftp connection closed'.green);
-						conn.close();
-					});
-
-					readStream.pipe(writeStream);
 				});
 			}).connect({
 				host: config.host,
