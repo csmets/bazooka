@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "CLI API-centric CMS",
   "scripts": {
-    "lint-bin": "eslint bin/**/*.js"
+    "lint-bin": "eslint bin/**/*.js",
     "lint-lib": "eslint lib/**/*.js"
   },
   "repository": {
@@ -21,14 +21,17 @@
   },
   "homepage": "https://github.com/csmets/bazooka#readme",
   "dependencies": {
+    "colors": "^1.1.2",
+    "commander": "^2.9.0",
     "markdown-to-json": "^0.4.2",
     "marked": "^0.3.6",
+    "prompt": "^1.0.0",
     "ssh2": "^0.5.4",
     "yaml-front-matter": "^3.4.0"
   },
   "preferGlobal": true,
   "bin": {
-    "bazooka": "bin/bazooka.js"
+    "bazooka": "./bin/bazooka.js"
   },
   "devDependencies": {
     "eslint": "^3.15.0",
