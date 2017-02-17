@@ -86,15 +86,34 @@ program
 					exportReadStream.pipe(exportWriteStream);
 
 					// Push all public assets to remote server.
-					
+					const upload = (asset, dir) => {
+						const string = `${workingDir}/public`;
+						const remotePath = dir.replace(
+							string,
+							config.location
+						);
+						if (fs.statSync(`${dir}/${asset}`)
+							.isDirectory() === true) {
+							sftp.mkdir(`${remotePath}/${asset}`);
+						} else {
+							const readStream =
+								fs.createReadStream(`${dir}/${asset}`);
+							const writeStream =
+								sftp.createWriteStream(`${remotePath}/${asset}`);
+							readStream.pipe(writeStream);
+						}
+					}
 
-					writeStream.on('close', () => {
+					bazooka.dirRecFunc(`${workingDir}/public`, upload);
+
+					exportWriteStream.on('close', () => {
 						console.log('- file transferred successfully'.green);
 						conn.end();
 					});
 
 				});
-			}).connect({
+			})
+			.connect({
 				host: config.host,
 				port: config.port,
 				username: result.username,
