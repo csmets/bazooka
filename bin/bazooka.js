@@ -26,6 +26,7 @@ program
 	.command('push')
 	.description('Push project to remote server')
 	.action(() => {
+
 		// Get Project config
 		if (!bazookaConfigExists()) {
 			console.log(
