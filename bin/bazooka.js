@@ -24,7 +24,7 @@ const bazookaConfigExists = () => {
 program.version('0.1.0');
 
 program
-	.command('push')
+	.command('fire')
 	.description('Push project to remote server')
 	.action(() => {
 		// Get Project config
@@ -126,6 +126,10 @@ program
 	.command('init')
 	.description('Create bazooka project configuration file.')
 	.action(() => {
+		// Create public folder for assets if it doesn't already exists
+		if (!fs.existsSync('./public')){
+			    fs.mkdirSync('./public');
+		}
 		// Create .bazookaconfig file and run through default steps.
 		const schema = {
 			properties: {
