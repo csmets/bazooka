@@ -2,7 +2,8 @@
 
 const fs = require('fs');
 const Client = require('ssh2').Client;
-const bazooka = require('../lib/bazooka-compile');
+const dirtools = require('../lib/dir-func-tools');
+const compiler = require('../lib/bazooka-compile');
 const program = require('commander');
 const color = require('colors');
 const prompt = require('prompt');
@@ -23,7 +24,7 @@ const bazookaConfigExists = () => {
 program.version('0.1.0');
 
 program
-	.command('push')
+	.command('fire')
 	.description('Push project to remote server')
 	.action(() => {
 		// Get Project config
@@ -45,7 +46,7 @@ program
 
 		const globalIgnoredDirs = 'public';
 		config.excludeDirs.push(globalIgnoredDirs);
-		const json = bazooka.compile(process.cwd(), config.excludeDirs, {});
+		const json = compiler.compile(process.cwd(), config.excludeDirs, {});
 		const jsonString = JSON.stringify(json, null, 4);
 
 		// Write to file
@@ -64,6 +65,7 @@ program
 				password: {
 					description: 'sftp password',
 					required: true,
+					hidden: true,
 				},
 			},
 		};
@@ -81,8 +83,7 @@ program
 					const exportReadStream =
 						fs.createReadStream(`${workingDir}/export.json`);
 					const exportWriteStream = sftp.createWriteStream(
-						`${config.location}/export.json`
-					);
+						`${config.location}/export.json`);
 					exportReadStream.pipe(exportWriteStream);
 
 					// Push all public assets to remote server.
@@ -90,10 +91,10 @@ program
 						const string = `${workingDir}/public`;
 						const remotePath = dir.replace(
 							string,
-							config.location
-						);
-						if (fs.statSync(`${dir}/${asset}`)
-							.isDirectory() === true) {
+							config.location);
+
+						if (fs.statSync(
+							`${dir}/${asset}`).isDirectory() === true) {
 							sftp.mkdir(`${remotePath}/${asset}`);
 						} else {
 							const readStream =
@@ -102,15 +103,14 @@ program
 								sftp.createWriteStream(`${remotePath}/${asset}`);
 							readStream.pipe(writeStream);
 						}
-					}
+					};
 
-					bazooka.dirRecFunc(`${workingDir}/public`, upload);
+					dirtools.dirRecFunc(`${workingDir}/public`, upload);
 
 					exportWriteStream.on('close', () => {
 						console.log('- file transferred successfully'.green);
 						conn.end();
 					});
-
 				});
 			})
 			.connect({
@@ -126,6 +126,10 @@ program
 	.command('init')
 	.description('Create bazooka project configuration file.')
 	.action(() => {
+		// Create public folder for assets if it doesn't already exists
+		if (!fs.existsSync('./public')){
+			    fs.mkdirSync('./public');
+		}
 		// Create .bazookaconfig file and run through default steps.
 		const schema = {
 			properties: {
